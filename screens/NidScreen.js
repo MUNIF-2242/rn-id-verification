@@ -1,27 +1,36 @@
-import React, { useState } from "react";
-import {
-  View,
-  Image,
-  Alert,
-  Text,
-  ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Alert, Text, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { FontAwesome } from "@expo/vector-icons";
+import { DETECT_TEXT_DATA } from "../model/data";
+import axios from "axios";
+import CustomLabel from "../components/CustomLabel";
+import CustomImage from "../components/CustomImage";
+import PlaceholderImage from "../components/PlaceholderImage";
+import AutofillComponent from "../components/AutofillComponent";
+import CustomActivityIndicator from "../components/CustomActivityIndicator";
+import MarginTop from "../components/spacer/MarginTop";
+import CustomButton from "../components/CustomButton";
 
 const NidScreen = () => {
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
   const [selfieImage, setSelfieImage] = useState(null);
   const [selfieUrl, setSelfieUrl] = useState("");
   const [nidImage, setNidImage] = useState(null);
   const [nidUrl, setNidUrl] = useState("");
-  const [faceComparisonResult, setFaceComparisonResult] = useState("");
-  const [nidFaceComparisonResult, setNidFaceComparisonResult] = useState("");
+
+  const [selfieFaceDetectResult, setSelfieFaceDetectResult] = useState("");
+  const [nidFaceDetectResult, setNidFaceDetectResult] = useState("");
+  const [porichoyVerificationResponse, setPorichoyVerificationResponse] =
+    useState("");
 
   const [loading, setLoading] = useState(false);
   const [nidLoading, setNidLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
+  const [nid, setNid] = useState("");
 
   const pickSelfie = async () => {
     const permissionResult =
@@ -60,7 +69,7 @@ const NidScreen = () => {
       const data = await response.json();
       if (response.ok) {
         setSelfieUrl(data.imageUrl);
-        detectFace(data.imageUrl, setFaceComparisonResult);
+        detectFace(data.imageUrl, setSelfieFaceDetectResult);
         Alert.alert(
           "Selfie uploaded successfully!",
           `Selfie URL: ${data.imageUrl}`
@@ -113,7 +122,7 @@ const NidScreen = () => {
       const data = await response.json();
       if (response.ok) {
         setNidUrl(data.imageUrl);
-        detectFace(data.imageUrl, setNidFaceComparisonResult);
+        detectFace(data.imageUrl, setNidFaceDetectResult);
         Alert.alert("NID uploaded successfully!", `NID URL: ${data.imageUrl}`);
       } else {
         Alert.alert("Failed to upload NID", `Error: ${data.message}`);
@@ -121,8 +130,7 @@ const NidScreen = () => {
     } catch (error) {
       Alert.alert("An error occurred", error.message);
     } finally {
-      // Adding a small delay to ensure the loading indicator is visible briefly
-      setTimeout(() => setNidLoading(false), 500);
+      setNidLoading(false);
     }
   };
 
@@ -139,7 +147,6 @@ const NidScreen = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log(`Face Detection Result: ${JSON.stringify(data)}`);
         setComparisonResult(data.faceDetected ? "success" : "error");
       } else {
         Alert.alert("Failed to detect face", `Error: ${data.message}`);
@@ -153,89 +160,159 @@ const NidScreen = () => {
     }
   };
 
+  // Function to compare faces using the third API
+  const compareFaces = async () => {
+    if (!selfieUrl || !nidUrl) {
+      Alert.alert("Please upload both selfie and NID images first!");
+      return;
+    }
+    try {
+      const response = await fetch(`${BASE_URL}/compare-face`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ selfieUrl, nidUrl }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.matched) {
+          Alert.alert(
+            "Face comparison successful!",
+            `Response: ${JSON.stringify(data)}`
+          );
+          await detectTexts();
+        } else {
+          Alert.alert(
+            "Face comparison unsuccessful",
+            "The faces did not match."
+          );
+        }
+      } else {
+        Alert.alert("Failed to compare faces", `Error: ${data.message}`);
+      }
+    } catch (error) {
+      Alert.alert("An error occurred", error.message);
+    } finally {
+      setLoading(false);
+      setVerifyLoading(false);
+    }
+  };
+
+  //Function to detect texts
+  const detectTexts = async () => {
+    console.log("face matced and detect text call");
+    try {
+      const response = await fetch(`${BASE_URL}/detect-text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileName: "nid.jpg" }),
+      });
+      const data = await response.json();
+      setName(data.name);
+      setDob(data.dob);
+      setNid(data.nid);
+      if (response.ok) {
+        console.log(`Detected Text: ${JSON.stringify(data)}`);
+        Alert.alert(
+          "Text detection successful!",
+          `Detected Text: ${JSON.stringify(data)}`
+        );
+        await porichoyBasic(data.name, data.dob, data.nid);
+      } else {
+        Alert.alert("Failed to detect text", `Error: ${data.message}`);
+      }
+    } catch (error) {
+      Alert.alert("An error occurred", error.message);
+    } finally {
+    }
+  };
+
+  const porichoyBasic = async (name, dob, nid) => {
+    const apiUrl = `${BASE_URL}/porichoy-basic`;
+    try {
+      const response = await axios.post(
+        apiUrl,
+        {
+          name,
+          dob,
+          nid,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Porichoy Basic API response:", response.data);
+      setPorichoyVerificationResponse(response.data.passKyc);
+    } catch (error) {
+      console.error("Error calling Porichoy Basic API:", error);
+    } finally {
+    }
+  };
+
+  const verifyNid = async () => {
+    await compareFaces();
+  };
+
   return (
     <View style={styles.container}>
-      <Text>Profile image</Text>
-      <View style={styles.topSpacer} />
+      <CustomLabel text="Profile image" />
+      <MarginTop />
       <View style={styles.profilePlaceholderContainer}>
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color="#fff"
-            style={styles.loadingIndicator}
-          />
-        )}
+        {loading && <CustomActivityIndicator />}
         {selfieImage ? (
-          <Image
-            source={{ uri: selfieImage }}
-            style={{ width: 100, height: 100 }}
-          />
+          <CustomImage source={{ uri: selfieImage }} />
         ) : (
-          !loading && <View style={styles.profilePlaceholderImageStyle}></View>
+          !loading && <PlaceholderImage />
         )}
       </View>
-      <View style={styles.topSpacer} />
-      <TouchableOpacity
-        style={styles.button}
+      <MarginTop />
+      <CustomButton
         onPress={pickSelfie}
-        disabled={loading || faceComparisonResult === "success"}
-      >
-        <Text style={styles.buttonText}>Take Selfie</Text>
-        {faceComparisonResult === "success" && (
-          <FontAwesome
-            name="check"
-            size={20}
-            color="#fff"
-            style={styles.icon}
-          />
-        )}
-      </TouchableOpacity>
-      {faceComparisonResult === "error" && !loading && (
+        disabled={loading || selfieFaceDetectResult === "success"}
+        text="Take Selfie"
+        showIcon={selfieFaceDetectResult === "success"}
+      />
+      {selfieFaceDetectResult === "error" && !loading && (
         <Text style={styles.errorMessage}>Please take a face image</Text>
       )}
-
-      <View style={styles.topSpacer} />
-
-      <Text>NID image</Text>
-      <View style={styles.topSpacer} />
+      <MarginTop />
+      <CustomLabel text="NID image" />
+      <MarginTop />
       <View style={styles.profilePlaceholderContainer}>
-        {nidLoading && (
-          <ActivityIndicator
-            size="large"
-            color="#fff"
-            style={styles.loadingIndicator}
-          />
-        )}
+        {nidLoading && <CustomActivityIndicator />}
         {nidImage ? (
-          <Image
-            source={{ uri: nidImage }}
-            style={{ width: 100, height: 100 }}
-          />
+          <CustomImage source={{ uri: nidImage }} />
         ) : (
-          !nidLoading && (
-            <View style={styles.profilePlaceholderImageStyle}></View>
-          )
+          !nidLoading && <PlaceholderImage />
         )}
       </View>
-      <View style={styles.topSpacer} />
-      <TouchableOpacity
-        style={styles.button}
+      <MarginTop />
+      <CustomButton
         onPress={pickNid}
-        disabled={nidLoading || nidFaceComparisonResult === "success"}
-      >
-        <Text style={styles.buttonText}>Take NID</Text>
-        {nidFaceComparisonResult === "success" && (
-          <FontAwesome
-            name="check"
-            size={20}
-            color="#fff"
-            style={styles.icon}
-          />
-        )}
-      </TouchableOpacity>
-      {nidFaceComparisonResult === "error" && !nidLoading && (
-        <Text style={styles.errorMessage}>Please take an NID image</Text>
+        disabled={nidLoading || nidFaceDetectResult === "success"}
+        text="Take NID"
+        showIcon={nidFaceDetectResult === "success"}
+      />
+      {nidFaceDetectResult === "error" && !nidLoading && (
+        <Text style={styles.errorMessage}>Please take a face image</Text>
       )}
+      <MarginTop />
+      <CustomButton
+        onPress={verifyNid}
+        disabled={porichoyVerificationResponse === "yes"}
+        text="Verify NID"
+        showIcon={porichoyVerificationResponse === "yes"}
+      />
+      {porichoyVerificationResponse ? (
+        <AutofillComponent name={name} dob={dob} nid={nid} />
+      ) : null}
     </View>
   );
 };
@@ -247,36 +324,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  topSpacer: { marginTop: 15 },
   profilePlaceholderContainer: {
     position: "relative",
     width: 100,
     height: 100,
     justifyContent: "center",
     alignItems: "center",
-  },
-  profilePlaceholderImageStyle: {
-    width: 100,
-    height: 100,
-    backgroundColor: "gray",
-    opacity: 0.1,
-  },
-  loadingIndicator: {
-    position: "absolute",
-    zIndex: 1,
-  },
-  button: {
-    width: "50%",
-    flexDirection: "row",
-    backgroundColor: "#8e44ad",
-    padding: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  icon: {
-    marginLeft: 8,
   },
   errorMessage: {
     color: "red",

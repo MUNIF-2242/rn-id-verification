@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     backgroundColor: "#2c3e50",
-    padding: 20,
+    padding: 30,
     textAlign: "center",
     fontSize: 18,
     color: "#fff",
@@ -53,10 +53,10 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "80%",
-    paddingVertical: 10,
+    paddingVertical: 25,
     marginVertical: 10,
     backgroundColor: "#8e44ad",
-    borderRadius: 25,
+    borderRadius: 5,
     alignItems: "center",
   },
   buttonText: {
