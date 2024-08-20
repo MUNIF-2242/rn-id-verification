@@ -57,6 +57,7 @@ const NidScreen = () => {
 
   const uploadSelfie = async (base64Image) => {
     setLoading(true);
+    setSelfieFaceDetectResult("");
     try {
       const response = await fetch(`${BASE_URL}/upload-selfie`, {
         method: "POST",
@@ -70,10 +71,10 @@ const NidScreen = () => {
       if (response.ok) {
         setSelfieUrl(data.imageUrl);
         detectFace(data.imageUrl, setSelfieFaceDetectResult);
-        Alert.alert(
-          "Selfie uploaded successfully!",
-          `Selfie URL: ${data.imageUrl}`
-        );
+        // Alert.alert(
+        //   "Selfie uploaded successfully!",
+        //   `Selfie URL: ${data.imageUrl}`
+        // );
       } else {
         Alert.alert("Failed to upload selfie", `Error: ${data.message}`);
       }
@@ -81,7 +82,7 @@ const NidScreen = () => {
       Alert.alert("An error occurred", error.message);
     } finally {
       // Adding a small delay to ensure the loading indicator is visible briefly
-      setTimeout(() => setLoading(false), 500);
+      setLoading(false);
     }
   };
 
@@ -110,6 +111,7 @@ const NidScreen = () => {
 
   const uploadNid = async (base64Image) => {
     setNidLoading(true);
+    setNidFaceDetectResult("");
     try {
       const response = await fetch(`${BASE_URL}/upload-nid`, {
         method: "POST",
@@ -120,10 +122,9 @@ const NidScreen = () => {
       });
 
       const data = await response.json();
-      if (response.ok) {
+      if (data.imageUrl) {
         setNidUrl(data.imageUrl);
         detectFace(data.imageUrl, setNidFaceDetectResult);
-        Alert.alert("NID uploaded successfully!", `NID URL: ${data.imageUrl}`);
       } else {
         Alert.alert("Failed to upload NID", `Error: ${data.message}`);
       }
@@ -135,7 +136,6 @@ const NidScreen = () => {
   };
 
   const detectFace = async (imageUrl, setComparisonResult) => {
-    setLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/detect-face`, {
         method: "POST",
@@ -166,6 +166,7 @@ const NidScreen = () => {
       Alert.alert("Please upload both selfie and NID images first!");
       return;
     }
+    setVerifyLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/compare-face`, {
         method: "POST",
@@ -177,21 +178,14 @@ const NidScreen = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        if (data.matched) {
-          Alert.alert(
-            "Face comparison successful!",
-            `Response: ${JSON.stringify(data)}`
-          );
-          await detectTexts();
-        } else {
-          Alert.alert(
-            "Face comparison unsuccessful",
-            "The faces did not match."
-          );
-        }
+      if (data.matched) {
+        Alert.alert(
+          "Face comparison successful!",
+          `Response: ${JSON.stringify(data)}`
+        );
+        await detectTexts();
       } else {
-        Alert.alert("Failed to compare faces", `Error: ${data.message}`);
+        Alert.alert("Face comparison unsuccessful", "The faces did not match.");
       }
     } catch (error) {
       Alert.alert("An error occurred", error.message);
@@ -229,6 +223,7 @@ const NidScreen = () => {
     } catch (error) {
       Alert.alert("An error occurred", error.message);
     } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -252,6 +247,7 @@ const NidScreen = () => {
       setPorichoyVerificationResponse(response.data.passKyc);
     } catch (error) {
       console.error("Error calling Porichoy Basic API:", error);
+      Alert.alert("Provide valid NID");
     } finally {
     }
   };
@@ -267,11 +263,19 @@ const NidScreen = () => {
       <View style={styles.profilePlaceholderContainer}>
         {loading && <CustomActivityIndicator />}
         {selfieImage ? (
-          <CustomImage source={{ uri: selfieImage }} />
+          <CustomImage
+            source={{ uri: selfieImage }}
+            style={{ width: 100, height: 100 }}
+          />
         ) : (
-          !loading && <PlaceholderImage />
+          !loading && (
+            <PlaceholderImage extrastyle={{ width: 100, height: 100 }} />
+          )
         )}
       </View>
+      {selfieFaceDetectResult === "error" && !loading && (
+        <Text style={styles.errorMessage}>Image does not contain face</Text>
+      )}
       <MarginTop />
       <CustomButton
         onPress={pickSelfie}
@@ -279,13 +283,11 @@ const NidScreen = () => {
         text="Take Selfie"
         showIcon={selfieFaceDetectResult === "success"}
       />
-      {selfieFaceDetectResult === "error" && !loading && (
-        <Text style={styles.errorMessage}>Please take a face image</Text>
-      )}
+
       <MarginTop />
       <CustomLabel text="NID image" />
       <MarginTop />
-      <View style={styles.profilePlaceholderContainer}>
+      <View style={styles.widePlaceholderContainer}>
         {nidLoading && <CustomActivityIndicator />}
         {nidImage ? (
           <CustomImage source={{ uri: nidImage }} />
@@ -293,6 +295,9 @@ const NidScreen = () => {
           !nidLoading && <PlaceholderImage />
         )}
       </View>
+      {nidFaceDetectResult === "error" && !nidLoading && (
+        <Text style={styles.errorMessage}>Please upload valid NID image</Text>
+      )}
       <MarginTop />
       <CustomButton
         onPress={pickNid}
@@ -300,15 +305,14 @@ const NidScreen = () => {
         text="Take NID"
         showIcon={nidFaceDetectResult === "success"}
       />
-      {nidFaceDetectResult === "error" && !nidLoading && (
-        <Text style={styles.errorMessage}>Please take a face image</Text>
-      )}
+
       <MarginTop />
       <CustomButton
         onPress={verifyNid}
         disabled={porichoyVerificationResponse === "yes"}
         text="Verify NID"
         showIcon={porichoyVerificationResponse === "yes"}
+        loading={verifyLoading}
       />
       {porichoyVerificationResponse ? (
         <AutofillComponent name={name} dob={dob} nid={nid} />
@@ -328,6 +332,13 @@ const styles = StyleSheet.create({
     position: "relative",
     width: 100,
     height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  widePlaceholderContainer: {
+    position: "relative",
+    width: "100%",
+    height: 200,
     justifyContent: "center",
     alignItems: "center",
   },

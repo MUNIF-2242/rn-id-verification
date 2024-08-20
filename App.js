@@ -24,13 +24,14 @@ export default function App() {
         />
         <Stack.Screen
           name="ScreenTwo"
-          component={BirthScreen}
-          options={{ title: "Birth Registration Verification" }}
-        />
-        <Stack.Screen
-          name="ScreenThree"
           component={PassportScreen}
           options={{ title: "Passport Verification" }}
+        />
+
+        <Stack.Screen
+          name="ScreenThree"
+          component={BirthScreen}
+          options={{ title: "Birth Registration Verification" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

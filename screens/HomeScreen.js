@@ -13,19 +13,17 @@ const HomeScreen = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>NID Verification</Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ScreenTwo")}
       >
-        <Text style={styles.buttonText}>Birth Registration Verification</Text>
+        <Text style={styles.buttonText}>Passport Verification</Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ScreenThree")}
       >
-        <Text style={styles.buttonText}>Passport Verification</Text>
+        <Text style={styles.buttonText}>Birth Registration Verification</Text>
       </TouchableOpacity>
     </View>
   );
@@ -56,7 +54,7 @@ const styles = StyleSheet.create({
     paddingVertical: 25,
     marginVertical: 10,
     backgroundColor: "#8e44ad",
-    borderRadius: 5,
+    borderRadius: 3,
     alignItems: "center",
   },
   buttonText: {
