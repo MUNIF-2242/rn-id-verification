@@ -4,9 +4,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.titleText}>ID VERIFICATION FEATURE</Text>
-      </View>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ScreenOne")}
@@ -39,7 +36,9 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     width: "100%",
-    marginBottom: 30,
+    marginBottom: 140,
+    position: "absolute",
+    top: 40,
   },
   titleText: {
     backgroundColor: "#2c3e50",
