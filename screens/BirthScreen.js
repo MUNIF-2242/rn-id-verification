@@ -137,6 +137,7 @@ const BirthScreen = () => {
       console.log("Porichoy Birth API response:", response.data);
       setPorichoyVerificationResponse(response.data.status);
       setName(response.data.data.birthRegistration.fullNameEN);
+      Alert.alert("VALIDATION DONE! THROUGH PORICHOY ");
       // console.log(response.status);
     } catch (error) {
       console.error("Error calling Porichoy Basic API:", error);

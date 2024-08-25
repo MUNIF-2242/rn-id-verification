@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, Alert, Text, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { DETECT_TEXT_DATA } from "../model/data";
 import axios from "axios";
 import CustomLabel from "../components/CustomLabel";
 import CustomImage from "../components/CustomImage";
@@ -68,13 +67,13 @@ const NidScreen = () => {
       });
 
       const data = await response.json();
-      if (response.ok) {
+      if (data.imageUrl) {
         setSelfieUrl(data.imageUrl);
         detectFace(data.imageUrl, setSelfieFaceDetectResult);
-        // Alert.alert(
-        //   "Selfie uploaded successfully!",
-        //   `Selfie URL: ${data.imageUrl}`
-        // );
+        Alert.alert(
+          "Selfie uploaded successfully!",
+          `Selfie URL: ${data.imageUrl}`
+        );
       } else {
         Alert.alert("Failed to upload selfie", `Error: ${data.message}`);
       }
@@ -125,6 +124,7 @@ const NidScreen = () => {
       if (data.imageUrl) {
         setNidUrl(data.imageUrl);
         detectFace(data.imageUrl, setNidFaceDetectResult);
+        Alert.alert("NID uploaded successfully!", `NID URL: ${data.imageUrl}`);
       } else {
         Alert.alert("Failed to upload NID", `Error: ${data.message}`);
       }
@@ -207,18 +207,24 @@ const NidScreen = () => {
         body: JSON.stringify({ fileName: "nid.jpg" }),
       });
       const data = await response.json();
-      setName(data.name);
-      setDob(data.dob);
-      setNid(data.nid);
-      if (response.ok) {
+      console.log(data);
+      setName(data.nidData.name);
+      setDob(data.nidData.dob);
+      setNid(data.nidData.nid);
+      console.log(`Detected Text:` + data.nidData.name);
+      if (data.status == "success") {
         console.log(`Detected Text: ${JSON.stringify(data)}`);
         Alert.alert(
           "Text detection successful!",
           `Detected Text: ${JSON.stringify(data)}`
         );
-        await porichoyBasic(data.name, data.dob, data.nid);
+        await porichoyBasic(
+          data.nidData.name,
+          data.nidData.dob,
+          data.nidData.nid
+        );
       } else {
-        Alert.alert("Failed to detect text", `Error: ${data.message}`);
+        Alert.alert("Please provide valid NID frontside image");
       }
     } catch (error) {
       Alert.alert("An error occurred", error.message);
@@ -243,8 +249,14 @@ const NidScreen = () => {
           },
         }
       );
-      console.log("Porichoy Basic API response:", response.data);
-      setPorichoyVerificationResponse(response.data.passKyc);
+      //console.log("Porichoy Basic API response:", response.data);
+
+      if (response.data.passKyc === "no") {
+        Alert.alert("Provide valid NID");
+      } else {
+        setPorichoyVerificationResponse(response.data.passKyc);
+        Alert.alert("VALIDATION DONE! THROUGH PORICHOY ");
+      }
     } catch (error) {
       console.error("Error calling Porichoy Basic API:", error);
       Alert.alert("Provide valid NID");
@@ -280,7 +292,7 @@ const NidScreen = () => {
       <CustomButton
         onPress={pickSelfie}
         disabled={loading || selfieFaceDetectResult === "success"}
-        text="Take Selfie"
+        text="Upload selfie"
         showIcon={selfieFaceDetectResult === "success"}
       />
 
@@ -300,9 +312,10 @@ const NidScreen = () => {
       )}
       <MarginTop />
       <CustomButton
+        buttonStyle={{ width: "50%" }}
         onPress={pickNid}
         disabled={nidLoading || nidFaceDetectResult === "success"}
-        text="Take NID"
+        text="Upload NID image"
         showIcon={nidFaceDetectResult === "success"}
       />
 
@@ -314,7 +327,7 @@ const NidScreen = () => {
         showIcon={porichoyVerificationResponse === "yes"}
         loading={verifyLoading}
       />
-      {porichoyVerificationResponse ? (
+      {porichoyVerificationResponse === "yes" ? (
         <AutofillComponent name={name} dob={dob} nid={nid} />
       ) : null}
     </View>
