@@ -32,15 +32,14 @@ const NidScreen = () => {
   const [nid, setNid] = useState("");
 
   const pickSelfie = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -86,15 +85,14 @@ const NidScreen = () => {
   };
 
   const pickNid = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -291,7 +289,7 @@ const NidScreen = () => {
       <MarginTop />
       <CustomButton
         onPress={pickSelfie}
-        disabled={loading || selfieFaceDetectResult === "success"}
+        // disabled={loading || selfieFaceDetectResult === "success"}
         text="Upload selfie"
         showIcon={selfieFaceDetectResult === "success"}
       />
@@ -314,7 +312,7 @@ const NidScreen = () => {
       <CustomButton
         buttonStyle={{ width: "50%" }}
         onPress={pickNid}
-        disabled={nidLoading || nidFaceDetectResult === "success"}
+        // disabled={nidLoading || nidFaceDetectResult === "success"}
         text="Upload NID image"
         showIcon={nidFaceDetectResult === "success"}
       />
@@ -322,7 +320,7 @@ const NidScreen = () => {
       <MarginTop />
       <CustomButton
         onPress={verifyNid}
-        disabled={porichoyVerificationResponse === "yes"}
+        // disabled={porichoyVerificationResponse === "yes"}
         text="Verify NID"
         showIcon={porichoyVerificationResponse === "yes"}
         loading={verifyLoading}

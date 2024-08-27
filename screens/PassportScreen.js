@@ -35,15 +35,14 @@ const PassportScreen = () => {
   const [expirationDate, setExpirationDate] = useState("");
 
   const pickSelfie = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -88,15 +87,14 @@ const PassportScreen = () => {
   };
 
   const pickPassport = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -308,7 +306,7 @@ const PassportScreen = () => {
         <CustomButton
           buttonStyle={{ width: "55%" }}
           onPress={pickSelfie}
-          disabled={loading || selfieFaceDetectResult === "success"}
+          // disabled={loading || selfieFaceDetectResult === "success"}
           text="Upload selfie"
           showIcon={selfieFaceDetectResult === "success"}
         />
@@ -332,7 +330,7 @@ const PassportScreen = () => {
         <CustomButton
           buttonStyle={{ width: "55%" }}
           onPress={pickPassport}
-          disabled={passportLoading || passportFaceDetectResult === "success"}
+          //  disabled={passportLoading || passportFaceDetectResult === "success"}
           text="Take passport image"
           showIcon={passportFaceDetectResult === "success"}
         />
@@ -340,7 +338,7 @@ const PassportScreen = () => {
         <CustomButton
           buttonStyle={{ width: "55%" }}
           onPress={verifyPassport}
-          disabled={porichoyVerificationResponse === "yes"}
+          // disabled={porichoyVerificationResponse === "yes"}
           text="Verify Passport"
           showIcon={porichoyVerificationResponse === "yes"}
           loading={verifyLoading}

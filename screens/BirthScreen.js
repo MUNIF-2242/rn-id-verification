@@ -28,15 +28,14 @@ const BirthScreen = () => {
   const [birthRegNo, setBirthRegNo] = useState("");
 
   const pickBirhCertificate = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
 
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -168,14 +167,14 @@ const BirthScreen = () => {
       <CustomButton
         buttonStyle={{ width: "60%" }}
         onPress={pickBirhCertificate}
-        disabled={birthImageUploaded}
+        // disabled={birthImageUploaded}
         text="Take Birth Certificate"
         showIcon={birthImageUploaded}
       />
       <MarginTop />
       <CustomButton
         onPress={verifyBirthCertificate}
-        disabled={porichoyVerificationResponse === "YES"}
+        // disabled={porichoyVerificationResponse === "YES"}
         text="Verify"
         showIcon={porichoyVerificationResponse === "YES"}
         loading={verifyLoading}
