@@ -6,6 +6,7 @@ import NidScreen from "./screens/NidScreen";
 import BirthScreen from "./screens/BirthScreen";
 import PassportScreen from "./screens/PassportScreen";
 import { StatusBar } from "react-native";
+import BankScreen from "./screens/BankScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,20 +31,25 @@ export default function App() {
             options={{ title: "ID Verification" }}
           />
           <Stack.Screen
-            name="ScreenOne"
+            name="NidScreen"
             component={NidScreen}
             options={{ title: "NID Verification" }}
           />
           <Stack.Screen
-            name="ScreenTwo"
+            name="PassportScreen"
             component={PassportScreen}
             options={{ title: "Passport Verification" }}
           />
 
           <Stack.Screen
-            name="ScreenThree"
+            name="BirthScreen"
             component={BirthScreen}
             options={{ title: "Birth Registration Verification" }}
+          />
+          <Stack.Screen
+            name="BankScreen"
+            component={BankScreen}
+            options={{ title: "Bank Info Verification" }}
           />
         </Stack.Navigator>
       </NavigationContainer>

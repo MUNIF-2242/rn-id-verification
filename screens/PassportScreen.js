@@ -5,7 +5,7 @@ import axios from "axios";
 import CustomLabel from "../components/CustomLabel";
 import CustomImage from "../components/CustomImage";
 import PlaceholderImage from "../components/PlaceholderImage";
-import PassportAutofillComponent from "../components/PassportAutofillComponent";
+import PassportAutofillComponent from "../components/BankAutofillComponent";
 import CustomActivityIndicator from "../components/CustomActivityIndicator";
 import MarginTop from "../components/spacer/MarginTop";
 import CustomButton from "../components/CustomButton";

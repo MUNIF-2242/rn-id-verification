@@ -6,21 +6,27 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("ScreenOne")}
+        onPress={() => navigation.navigate("NidScreen")}
       >
         <Text style={styles.buttonText}>NID Verification</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("ScreenTwo")}
+        onPress={() => navigation.navigate("PassportScreen")}
       >
         <Text style={styles.buttonText}>Passport Verification</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("ScreenThree")}
+        onPress={() => navigation.navigate("BirthScreen")}
       >
         <Text style={styles.buttonText}>Birth Registration Verification</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("BankScreen")}
+      >
+        <Text style={styles.buttonText}>Bank Info Verification</Text>
       </TouchableOpacity>
     </View>
   );
